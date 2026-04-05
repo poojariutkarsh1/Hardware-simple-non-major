@@ -1,0 +1,51 @@
+#define BUZZER 22
+#define LED 23
+#define BUTTON 21
+
+bool emergencyMode = false;
+int lastState = HIGH;
+
+void setup() {
+  pinMode(LED, OUTPUT);
+  pinMode(BUTTON, INPUT_PULLUP);
+  ledcAttach(BUZZER, 2000, 8);
+  Serial.begin(115200);
+}
+
+void loop() {
+  int currentState = digitalRead(BUTTON);
+
+  // detect button press (HIGH → LOW)
+  if (lastState == HIGH && currentState == LOW) {
+    delay(50); // debounce
+
+    // wait until button is released
+    while (digitalRead(BUTTON) == LOW);
+
+    emergencyMode = !emergencyMode;
+  }
+
+  lastState = currentState;
+
+  if (emergencyMode) {
+    sirenEffect();
+  } else {
+    ledcWriteTone(BUZZER, 0);
+    digitalWrite(LED, LOW);
+  }
+}
+
+void sirenEffect() {
+  static int freq = 800;
+  static int direction = 1;
+
+  ledcWriteTone(BUZZER, freq);
+  digitalWrite(LED, HIGH); // LED stays ON during siren
+
+  freq += direction * 50;
+
+  if (freq >= 2000) direction = -1;
+  if (freq <= 800) direction = 1;
+
+  delay(10);
+}
