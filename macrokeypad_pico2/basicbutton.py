@@ -6,8 +6,13 @@ button = digitalio.DigitalInOut(board.GP15)
 button.direction = digitalio.Direction.INPUT
 button.pull = digitalio.Pull.UP
 
-while True:
-    if not button.value:
-        print("Pressed!")
+last_state = True
 
-    time.sleep(0.05)
+while True:
+    current = button.value
+
+    if last_state and not current:
+        print("Button Pressed Once")
+
+    last_state = current
+    time.sleep(0.01)
